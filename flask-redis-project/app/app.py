@@ -1,17 +1,26 @@
-from flask import flask 
-import REDIS_HOST
+from flask import Flask
+import redis
+import os
 
-APP =FLASK(_name_)
-r = redis.Redis(host='redis' , port=6379)
+app = Flask(__name__)
 
-@app.route('/')
-def welcome(): 
-    return 'welcome to your mo to your first container compose'
+REDIS_HOST = os.getenv("REDIS_HOST", "redis")
+REDIS_PORT = int(os.getenv("REDIS_PORT", 6379))
 
-@app.route('/count')
+redis_client = redis.Redis(
+    host=REDIS_HOST,
+    port=REDIS_PORT,
+    decode_responses=True
+)
+
+@app.route("/")
+def home():
+    return "Welcome to the Flask + Redis App!"
+
+@app.route("/count")
 def count():
-    count = r.incr('visits')
-    return f'this page has been visited {count} times.'
+    visits = redis_client.incr("visits")
+    return f"Visit count: {visits}"
 
-if __name__ == "_main_":
-    app.run(host='0.0.0.0', port 5002)
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5003)
